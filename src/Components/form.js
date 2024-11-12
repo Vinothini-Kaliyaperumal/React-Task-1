@@ -18,7 +18,7 @@ function SimpleForm() {
       ...formData,
       [name]: value
     });
-  };
+ };
 
   const validate = () => {
     let formErrors = {};
