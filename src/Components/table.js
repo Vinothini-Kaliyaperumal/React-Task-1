@@ -51,7 +51,7 @@ const styles = {
     backgroundColor: '#ffffff',
     borderRadius: '10px',
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-    fontFamily: 'Arial, sans-serif',
+    fontFamily: 'Dancing Script, cursive',
   },
   header: {
     textAlign: 'center',
@@ -96,8 +96,5 @@ const styles = {
 };
 
 export default DataTable;
-
-
-
 
 
