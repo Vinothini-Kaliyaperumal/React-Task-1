@@ -207,6 +207,7 @@
 
 
 import React, { useState } from 'react';
+// import './form.css'
 
 function SimpleForm() {
   const [formData, setFormData] = useState({
