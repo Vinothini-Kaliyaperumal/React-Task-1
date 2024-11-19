@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-// import './form.css'
+import { useNavigate } from 'react-router-dom';
 
 function SimpleForm() {
   const [formData, setFormData] = useState({
@@ -7,8 +7,8 @@ function SimpleForm() {
     email: '',
     message: '',
   });
-  const [data, setData] = useState([]);
-  const [editIndex, setEditIndex] = useState(null);
+
+  const navigate = useNavigate(); // Initialize navigate function
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -18,209 +18,116 @@ function SimpleForm() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editIndex !== null) {
-      const updatedData = data.map((entry, index) =>
-        index === editIndex ? formData : entry
-      );
-      setData(updatedData);
-      setEditIndex(null);
-    } else {
-      setData([...data, formData]);
+    try {
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const savedData = await response.json();
+
+        // Store data in local storage
+        const storedData = JSON.parse(localStorage.getItem('formData')) || [];
+        localStorage.setItem('formData', JSON.stringify([...storedData, savedData]));
+
+        alert('Data submitted successfully!');
+        setFormData({
+          name: '',
+          email: '',
+          message: '',
+        });
+
+        // Navigate to DataTable
+        navigate('/table');
+      } else {
+        alert('Failed to submit data.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Network error.');
     }
-    setFormData({
-      name: '',
-      email: '',
-      message: '',
-    });
-  };
-
-  const handleEdit = (index) => {
-    setFormData(data[index]);
-    setEditIndex(index);
-  };
-
-  const handleDelete = (index) => {
-    const updatedData = data.filter((_, i) => i !== index);
-    setData(updatedData);
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Contact Us</h1>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <input
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleInputChange}
-          placeholder="Enter your name"
-          style={styles.input}
-        />
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-          placeholder="Enter your email"
-          style={styles.input}
-        />
-        <textarea
-          name="message"
-          value={formData.message}
-          onChange={handleInputChange}
-          placeholder="Write your message"
-          style={styles.textarea}
-        />
-        <button type="submit" style={styles.button}>
-          {editIndex !== null ? 'Update' : 'Submit'}
-        </button>
+    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', backgroundColor: '#f7f7f7', borderRadius: '8px' }}>
+      <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>Simple Form</h1>
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: '15px' }}>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            placeholder="Enter your name"
+            required
+            style={{
+              width: '100%',
+              padding: '10px',
+              fontSize: '16px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+            }}
+          />
+        </div>
+        <div style={{ marginBottom: '15px' }}>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            placeholder="Enter your email"
+            required
+            style={{
+              width: '100%',
+              padding: '10px',
+              fontSize: '16px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+            }}
+          />
+        </div>
+        <div style={{ marginBottom: '15px' }}>
+          <textarea
+            name="message"
+            value={formData.message}
+            onChange={handleInputChange}
+            placeholder="Write your message"
+            required
+            style={{
+              width: '100%',
+              padding: '10px',
+              fontSize: '16px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              minHeight: '120px',
+            }}
+          />
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <button
+            type="submit"
+            style={{
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '16px',
+            }}
+          >
+            Submit
+          </button>
+        </div>
       </form>
-
-      <h2 style={styles.tableTitle}>Data Table</h2>
-      <table style={styles.table}>
-        <thead>
-          <tr style={styles.headerRow}>
-            <th style={styles.th}>Name</th>
-            <th style={styles.th}>Email</th>
-            <th style={styles.th}>Message</th>
-            <th style={styles.th}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.length > 0 ? (
-            data.map((entry, index) => (
-              <tr key={index} style={index % 2 === 0 ? styles.evenRow : styles.oddRow}>
-                <td style={styles.td}>{entry.name}</td>
-                <td style={styles.td}>{entry.email}</td>
-                <td style={styles.td}>{entry.message}</td>
-                <td style={styles.td}>
-                  <button onClick={() => handleEdit(index)} style={styles.editButton}>Edit</button>
-                  <button onClick={() => handleDelete(index)} style={styles.deleteButton}>Delete</button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="4" style={styles.emptyRow}>No data available</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
     </div>
   );
 }
 
-const styles = {
-  container: {
-    maxWidth: '800px',
-    margin: '0 auto',
-    padding: '20px',
-    backgroundColor: '#ffffff',
-    borderRadius: '10px',
-    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: '20px',
-    textAlign: 'center',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  input: {
-    padding: '10px',
-    marginBottom: '10px',
-    borderRadius: '8px',
-    border: '1px solid #ccc',
-    fontSize: '16px',
-  },
-  textarea: {
-    padding: '10px',
-    marginBottom: '10px',
-    borderRadius: '8px',
-    border: '1px solid #ccc',
-    fontSize: '16px',
-    height: '100px',
-    resize: 'vertical',
-  },
-  button: {
-    padding: '12px 20px',
-    backgroundColor: '#4CAF50',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    cursor: 'pointer',
-    alignSelf: 'center',
-  },
-  tableTitle: {
-    fontSize: '20px',
-    color: '#333',
-    marginTop: '30px',
-    textAlign: 'center',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    marginTop: '10px',
-  },
-  headerRow: {
-    backgroundColor: '#f2f2f2',
-  },
-  th: {
-    padding: '12px',
-    border: '1px solid #ddd',
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  td: {
-    padding: '12px',
-    border: '1px solid #ddd',
-    textAlign: 'center',
-    color: '#333',
-  },
-  evenRow: {
-    backgroundColor: '#fafafa',
-  },
-  oddRow: {
-    backgroundColor: '#f9f9f9',
-  },
-  editButton: {
-    padding: '8px 12px',
-    marginRight: '5px',
-    backgroundColor: '#4CAF50',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-  },
-  deleteButton: {
-    padding: '8px 12px',
-    backgroundColor: '#f44336',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-  },
-  emptyRow: {
-    textAlign: 'center',
-    color: '#666',
-    padding: '20px',
-  },
-};
-
-
-
-
-
 export default SimpleForm;
-
-
-
-
-
